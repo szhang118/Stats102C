@@ -1,0 +1,87 @@
+---
+title: "Stats102CWeek1"
+author: "Steve Zhang"
+date: "April 6, 2017"
+output: html_document
+---
+
+```{r}
+xs <- rep(NA, 10000000)
+rands <- runif(10000000)
+ptm <- proc.time()
+for (i in 1:length(xs)) {
+    rand <- rands[i]
+    if (rand < 0.999) {
+        xs[i] <- "C"
+    } else if (rand < 0.995) {
+        xs[i] <- "B"
+    } else {
+        xs[i] <- "A"
+    }
+}
+proc.time() - ptm
+```
+
+```{r}
+xs <- rep(NA, 10000000)
+rands <- runif(10000000)
+ptm <- proc.time()
+for (i in 1:length(xs)) {
+    rand <- rands[i]
+    if (rand < 0.005) {
+        xs[i] <- "C"
+    } else if (rand < 0.01) {
+        xs[i] <- "B"
+    } else {
+        xs[i] <- "A"
+    }
+}
+proc.time() - ptm
+```
+
+```{r}
+library(ggplot2)
+```
+
+
+```{r}
+#Generate random numbers from exponential
+randexp <- function(lambda, n) {
+    rands <- runif(n)
+    exps <- -1.0/lambda*log(rands)
+    df <- data.frame(exp = exps)
+    ggplot(df, aes(x=exp)) + geom_histogram()
+}
+randexp(1.0, 100000)
+```
+
+```{r}
+#generate from binomial distribution
+randbin <- function(prob, n, N = 10000) {
+    rands <- runif(N)
+    #generate cdf probs for each value of x
+    cdfprobs <- pbinom(0:n, prob = prob, size = n)
+    bins <- rep(NA, N)
+    for (i in 1:N) {
+        rand <- rands[i]
+        #assignment to proper bin
+        bins[i] <- sum(cdfprobs < rand)
+    }  
+    df <- data.frame(counts = factor(bins))
+    ggplot(df, aes(x=counts)) + geom_bar()
+}
+randbin(0.5, 10, 10000)
+```
+
+```{r}
+#antiquated generator for normal distribution
+anti <- function() {
+    return(sum(runif(12, -0.5, 0.5)))
+}
+trials <- rep(NA, 10000)
+for (i in 1:length(trials)) {
+    trials[i] <- anti()
+}
+hist(trials, breaks = 30)
+```
+
