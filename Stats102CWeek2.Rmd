@@ -1,0 +1,108 @@
+---
+title: "Stats102CWeek2"
+author: "Steve Zhang"
+date: "April 10, 2017"
+output: html_document
+---
+
+```{r}
+library(ggplot2)
+```
+
+```{r}
+xs = seq(0.0, 1.0, 0.01)
+betas = dbeta(xs, 1.5, 1.5)
+df = data.frame(x = xs, beta = betas)
+ggplot(df, aes(x=x, y=beta)) + geom_line()
+```
+
+```{r}
+#beta(1.5, 1.5)
+f = function(x) (1 - x)^0.5 * x^0.5
+y = runif(1)
+y
+f(y)
+```
+
+```{r}
+samples = c()
+for (i in 1:10000) {
+    y = runif(1) #proposed value
+    ratio = f(y) / 0.5 #acceptance ratio
+    u = runif(1)
+    if (u <= ratio) {
+        samples = c(samples, y)    
+    }
+}
+length(samples)
+```
+
+```{r}
+hist(samples, breaks = 50)
+```
+
+```{r}
+simpois = function(lambda) {
+    sumExp = 0.0
+    K = 0
+    while (sumExp < 1.0) {
+        sumExp = sumExp + rexp(1, lambda)
+        if (sumExp > 1.0) {
+            return(K)
+        }
+        K = K + 1
+    }
+    return(K)
+}
+```
+
+```{r}
+poisSamp = rep(NA, 10000)
+for (i in 1:10000) {
+    poisSamp[i] = simpois(40)
+}
+mean(poisSamp)
+var(poisSamp)
+```
+
+```{r}
+ymin = -Inf
+ymax = Inf
+
+h = function(y) { #log of normal pdf
+    v = -y^2
+    return(v)
+}
+#derivative of h
+dh = function(y) {
+    return(-2*y)
+}
+```
+
+```{r}
+#Compute intersection points of supporting tangent lines
+zfix = function(yfixed)
+{
+	yf0 = head(yfixed, n=-1)
+	yf1 = tail(yfixed, n=-1)
+	zfixed = yf0 + (h(yf0) - h(yf1) + (yf1 - yf0)*dh(yf1)) / (dh(yf1) - dh(yf0))
+	return(zfixed)	
+}
+```
+
+```{r}
+yfix = c(-3, 0, 3)
+hplus = function(y, yfixed) {
+    res = rep(0, length(y))
+    zfixed = zfix(yfixed)
+    piecewise.idx = findInterval(y, c(ymin, zfixed, ymax))
+    npieces = length(zfixed) + 1
+    for (pidx in 1:npieces) {
+        yp == y[piecewise.idx == pidx]
+        xx = h(yfixed[pidx]) + (yp - yfixed[pidx])*dh(yfixed[pidx])
+        res[piecewise.idx == pidx] = xx
+    }
+    return(res)
+}
+```
+
