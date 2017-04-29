@@ -1,0 +1,83 @@
+---
+title: "Stats102CWeek3"
+author: "Steve Zhang"
+date: "April 17, 2017"
+output: html_document
+---
+
+```{r}
+#Simulating bivariate normal distribution
+mu = c(1, 2)
+sigma = matrix(c(1, 0.7, 0.7, 1), nrow = 2)
+
+z = rnorm(10000)
+Z = matrix(z, nrow = 2)
+
+#Cholesky decomposition
+A = t(chol(sigma))
+X = mu + A %*% Z
+```
+
+```{r}
+plot(t(X))
+```
+
+```{r}
+h = function(x) x
+xs = runif(10000, min = 0, max = 2)
+hxs = h(xs)
+mean(hxs)
+```
+
+```{r}
+h = function(x) (cos(50*x) + sin(20*x))^2
+curve(h(x), n=1000, las = 1)
+
+set.seed(1)
+n = 10000
+X = runif(n, 0, 1)
+h.X = h(X)
+mean(h.X)
+```
+
+```{r}
+#check with base R function
+integrate(h, 0, 1)
+```
+
+```{r}
+plot(1:10000, cumsum(h.X) / 1:10000, type = "l")
+```
+
+```{r}
+hbar.n = cumsum(h.X) / (1:n)
+var.m = function(m) {
+    (1.0/m) * mean((h.X[1:m] - hbar.n[m])^2)
+}
+```
+
+```{r}
+#Runing variance and standard error
+var.n = apply(t(1:n), 2, var.m)
+std.n = sqrt(var.n)
+```
+
+```{r}
+plot(1:n, std.n, type = "l")
+```
+
+```{r}
+plot(1:10000, cumsum(h.X) / 1:10000, type = "l")
+lines(hbar.n - 1.96*std.n, col="blue")
+lines(hbar.n + 1.96*std.n, col="blue")
+```
+
+```{r}
+h = function(x) {
+    exp(-(x - 3)^2/2) + exp(-(x - 6)^2/2)
+}
+xs = rnorm(100000)
+mean(h(xs))
+```
+
+
