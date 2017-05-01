@@ -1,0 +1,33 @@
+---
+title: "Stats102CWeek4"
+author: "Steve Zhang"
+date: "April 26, 2017"
+output: html_document
+---
+
+```{r}
+#truncated normal distribution
+truncNorm = function(x) {
+    return(2/sqrt(2*pi)*exp(-x^2/2))
+}
+```
+
+```{r}
+tMean = function(x) {
+    return(2*x/sqrt(2*pi)*exp(-x^2/2))
+}
+integrate(f = tMean, lower = 0.0, upper = 10.0) #0.7978846
+```
+
+```{r}
+#Use exponential with lambda = 2 as g(x)
+g = function(x) {return(2 * exp(-2*x))}
+```
+
+```{r}
+xs = rexp(100000, 2)
+W_s = truncNorm(xs) / g(xs)
+mean(xs*W_s)
+```
+
+
