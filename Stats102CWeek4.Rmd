@@ -30,4 +30,17 @@ W_s = truncNorm(xs) / g(xs)
 mean(xs*W_s)
 ```
 
+```{r}
+#Resampling from importance sampling
+x = runif(100000, -3.5, 3.5)
+weights = dnorm(x)/sum(dnorm(x)) #adjusted importance weights
+sampNorm = sample(x, 100000, replace = TRUE, prob = weights) #sample based on weights
+hist(sampNorm)
+```
+
+```{r}
+#Test for normality
+shapiro.test(sample(sampNorm, 5000, replace = FALSE))
+```
+
 
