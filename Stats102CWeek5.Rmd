@@ -1,0 +1,126 @@
+---
+title: "Stats102CWeek5"
+author: "Steve Zhang"
+date: "May 3, 2017"
+output: html_document
+---
+
+```{r}
+h = function(x) exp(-0.5*(x - 2)^2) - 0.1*abs(sin(2*x))
+v = seq(0, 5, 0.001)
+plot(v, h(v), type = "l")
+```
+
+```{r}
+#plot a graph of running mean of estimate as n goes from 1 to 1000
+n = 1000
+X = runif(n, 0, 5)
+h.X = h(X)
+hbar.n = 5*cumsum(h.X)/(1:n) 
+plot(1:n, hbar.n, type = "l")
+```
+
+```{r}
+#actual value 2.138173
+integrate(h, lower = 0.0, upper = 5.0)
+```
+
+```{r}
+var.m = function(m) {
+    (1/m^2) * sum((h.X[1:m] - hbar.n[m])^2)
+}
+#running variance
+v.n = apply(t(1:n), MARGIN = 2, var.m)
+plot(1:n, v.n, type = "l")
+```
+
+```{r}
+std.n = sqrt(v.n)
+plot(1:n, hbar.n, type = "l")
+lines(hbar.n - 1.96*std.n, col="blue")
+lines(hbar.n + 1.96*std.n, col="red")
+title(main = "Uniform sample")
+```
+
+```{r}
+#Importance sampling
+Y = rnorm(n, 2, 1)
+h.Y = h(Y)
+w.Y = h(Y) / dnorm(Y, 2, 1)
+w.Y[Y < 0] = 0 #only integrating from 0 to 5
+w.Y[Y > 5] = 0
+hbar.n = cumsum(w.Y)/(1:n) 
+var.m = function(m) {
+    (1/m^2) * sum((h.Y[1:m] - hbar.n[m])^2)
+}
+v.n = apply(t(1:n), MARGIN = 2, var.m)
+std.n = sqrt(v.n)
+plot(1:n, hbar.n, type = "l", ylim = c(0.0, 2.5))
+lines(hbar.n - 1.96*std.n, col="blue")
+lines(hbar.n + 1.96*std.n, col="red")
+title(main = "Importance sampling")
+```
+
+```{r}
+#transition matrix
+tmat = matrix(c(0.8, 0.3, 0.2, 0.7), nrow = 2)
+eig = eigen(tmat)$vectors
+eig[2, ]/sum(eig[2, ])
+```
+
+```{r}
+iters = 10000
+X = rep(0, iters)
+X[1] = rnorm(1, 0, 1)
+for (i in 2:iters) {
+    X[i] = X[i - 1]*0.9 + rnorm(1, 0, 1)
+}
+hist(X)
+```
+
+```{r}
+library(ggplot2)
+```
+
+```{r}
+iterations = 1000000
+left = list(7, 1, 2, 3, 4, 5, 6)
+right = list(2, 3, 4, 5, 6, 7, 1)
+islands = list(1000, 2000, 3000, 4000, 5000, 6000, 7000)
+```
+
+```{r}
+simulation = function(islands, N) {
+    current = 4
+    visits = rep(0, 7)
+    for (i in 1:N){
+        coin = runif(1)
+        if (coin < 0.5) {
+            destination = left[[current]]
+            pmove = min(1.0, islands[[destination]]/islands[[current]])
+            coin = runif(1)
+            if (coin < pmove) {
+                current = destination
+            }
+        } else{
+            destination = right[[current]]
+            pmove = min(1.0, islands[[destination]]/islands[[current]])
+            coin = runif(1)
+            if (coin < pmove) {
+                current = destination
+            }
+        }
+        visits[current] = visits[current] + 1
+    }
+    return(visits)
+}
+```
+
+```{r}
+visits = simulation(islands, 1000000)
+barplot(visits)
+```
+
+
+
+
