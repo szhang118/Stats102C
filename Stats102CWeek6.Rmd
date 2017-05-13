@@ -1,0 +1,125 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(ggplot2)
+library(gridExtra)
+```
+
+```{r}
+coinMetro = function(iters, sig, z, N) {
+    theta = 0.05
+    numAccept = 0
+    thetaVec = rep(0, iters)
+    for (i in 1:iters) {
+        delta = rnorm(1, mean = 0, sd = sig)
+        propose = theta + delta
+        if (propose > 0 & propose < 1) {
+            lpropose = dbinom(z, N, propose) * dbeta(propose, 1, 1)
+            lcurrent = dbinom(z, N, theta) * dbeta(theta, 1, 1)
+            pmove = min(1, lpropose/lcurrent)
+            coin = runif(1)
+            if (coin < pmove) {
+                numAccept = numAccept + 1
+                theta = propose
+            }
+        } 
+        thetaVec[i] = theta
+    }
+    cat("Percent accepted:", numAccept/iters)
+    df = data.frame(step=1:50000, theta=thetaVec)
+    p1 = ggplot(data = df, aes(x=theta)) + geom_histogram() +
+        ggtitle(cat("Proposal Sigma:", sig))
+    endChain = df[49900:50000, ]
+    beginChain = df[1:100, ]
+    p2 = ggplot(data=endChain, aes(x=theta, y=step)) + geom_line() +
+        ggtitle("End of Chain")
+    p3 = ggplot(data = beginChain, aes(x=theta, y=step)) + geom_line()+
+        ggtitle("Beginning of Chain")
+    grid.arrange(p1, p2, p3, ncol=1)
+}
+coinMetro(50000, 0.02, 14, 20)
+```
+```{r}
+#function from - 1 to +1
+f = function(x) {
+    if (x > 1 || x < -1) {
+        return(0)
+    } else {
+    return(-x^2 + 1)
+    }
+}
+x = seq(-1, 1, 0.001)
+plot(x, f(x), type = "l")
+```
+
+```{r}
+fgraph = function(num, den) {
+    xs = seq(0, 5, 0.001)
+    ys = df(xs, df1=num, df2 = den)
+    data = data.frame(x=xs, y=ys)
+    ggplot(data, aes(x=x, y=y)) + geom_line()
+}
+fgraph(40, 20)
+```
+
+
+```{r}
+current = 0.5
+results = rep(NA, 10000)
+for (i in 1:10000) {
+    propose = rf(1, df1 = 40, df2 = 20)
+    ratio = f(propose) / f(current)*df(current,df1=40, df2=20)/df(propose,df1=40, df2=20)
+    pmove = min(1.0, ratio)
+    u = runif(1)
+    if (u < pmove) {
+        current = propose
+    }
+    results[i] = current
+}
+```
+
+```{r}
+hist(results)
+```
+```{r}
+p = seq(0, 1, by = 0.001)
+likelihoods = dbinom(61, size = 100, prob = p)
+plot(p, likelihoods, type = "l")
+```
+
+```{r}
+like_61 = function(p) {
+    -1 * dbinom(61, size = 100, prob = p)
+}
+optim(par = 0.01, fn = like_61, lower = 0.0, upper = 1.0, method = "Brent")
+```
+```{r}
+library(reshape2)
+```
+
+
+```{r}
+betaGraph = function(a0, b0, data) {
+    probs = seq(0, 1, 0.001)
+    prior = dbeta(probs, a0, b0)
+    sigmaX = sum(data)
+    N = length(data)
+    a1 = a0 + sigmaX
+    b1 = b0 + (N - sigmaX)
+    posterior = dbeta(probs, a1, b1)
+    df = data.frame(prob = probs, prior = prior, posterior = posterior)
+    ggplot(df, aes(x = prob)) + geom_line(aes(y=prior, colour="Prior")) + 
+       geom_line(aes(y=posterior, colour="Posterior")) +
+        scale_colour_manual("", breaks=c("Prior", "Posterior"), values=c("Prior"="blue", "Posterior"="red"))
+}
+```
+
+```{r}
+coins = rbinom(100, 1, 0.8)
+betaGraph(100, 100, coins)
+```
+
+
