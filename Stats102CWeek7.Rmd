@@ -1,0 +1,71 @@
+---
+title: "Stats102CWeek7"
+author: "Steve Zhang"
+date: "May 16, 2017"
+output: html_document
+---
+
+```{r}
+library(rgl)
+```
+
+```{r}
+z1=6
+n1 = 8
+z2 = 2
+n2 = 7
+```
+
+```{r}
+likelihood = function(p1, p2) {
+    p1^z1*(1-p1)^(n1 - z1)*p2^z2*(1 - p2)^(n2- z2)
+}
+```
+
+```{r}
+p = seq(0, 1, by = 0.001)
+#prior parameters
+a1 = 2
+b1 = 2
+a2 = 2
+b2 = 2
+prior_1 = dbeta(p, a1, b1)
+prior_2 = dbeta(p, a2, b2)
+```
+
+```{r}
+prior_grid = outer(prior_1, prior_2)
+contour(prior_grid)
+```
+
+```{r}
+persp3d(prior_grid, col="blue")
+```
+
+```{r}
+like_grid = outer(p, p, FUN="likelihood")
+contour(like_grid)
+persp3d(like_grid, col = "white")
+```
+
+```{r}
+post_grid = prior_grid * like_grid
+contour(post_grid)
+persp3d(post_grid)
+```
+```{r}
+library(mvtnorm)
+```
+
+```{r}
+propose  = rmvnorm(1, mean=c(0, 0))
+```
+
+```{r}
+posterior = function(p1, p2) {
+    likelihood(p1, p2) * dbeta(p1, a1, b1) * dbeta(p2, a2, b2)
+}
+```
+
+
+
