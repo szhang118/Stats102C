@@ -1,0 +1,60 @@
+---
+title: "Stats102CWeek8"
+author: "Steve Zhang"
+date: "May 28, 2017"
+output: html_document
+---
+
+```{r}
+library(rgl)
+```
+
+```{r}
+z1=6
+n1 = 8
+z2 = 2
+n2 = 7
+```
+
+```{r}
+likelihood = function(p1, p2) {
+    p1^z1*(1-p1)^(n1 - z1)*p2^z2*(1 - p2)^(n2- z2)
+}
+```
+
+```{r}
+p = seq(0, 1, by = 0.001)
+#prior parameters
+a1 = 20
+b1 = 20
+a2 = 30
+b2 = 20
+prior_1 = dbeta(p, a1, b1)
+prior_2 = dbeta(p, a2, b2)
+```
+
+```{r}
+prior_grid = outer(prior_1, prior_2)
+contour(prior_grid)
+```
+
+Distribution of theta1 given data is now beta with shape parameters z1 + a1 and
+n1 - z1 + b1 with Gibbs Sampler
+```{r}
+k = 100
+theta1 = rep(NA, k)
+theta2 = rep(NA,k)
+for (i in 1:100) {
+    theta1[i] = rbeta(1, z1 + a1, n1 - z1 + b1)
+    theta2[i] = rbeta(1, z2 + a2, n2 - z2 + b2)
+}
+```
+```{r}
+plot(NA, xlim=c(0, 1), ylim=c(0, 1))
+for (i in 1:(k - 1)) {
+    segments(theta1[i], theta2[i], theta1[i + 1], theta2[i + 1])
+    segments(theta1[i + 1], theta2[i], theta1[i+1], theta2[i + 1])
+}
+points(theta1, theta2, col=rgb(1, 0, 0, alpha = 0.25), pch=19)
+```
+
