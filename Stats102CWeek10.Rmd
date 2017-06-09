@@ -1,0 +1,53 @@
+---
+title: "Stats102CWeek10"
+author: "Steve Zhang"
+date: "June 8, 2017"
+output: html_document
+---
+
+```{r}
+set.seed(1)
+install.packages("MCMCpack")
+```
+```{r}
+library(MCMCpack)
+```
+```{r}
+set.seed(1)
+gamma_theta = c(4, 4, 4, 4)
+theta_0 = rdirichlet(1, gamma_theta)
+theta_1 = rdirichlet(1, gamma_theta)
+```
+
+```{r}
+#generate 10 documents, each with 100 words
+#word probabilities given by theta vector
+w_0 = rmultinom(10, size = 100, prob = theta_0)
+w_1 = rmultinom(10, size = 100, prob = theta_1)
+c0 = rowSums(w_0)
+c1 = rowSums(w_1)
+```
+
+```{r}
+#A first sampling of the label L
+#using document j = 1
+```
+
+```{r}
+#define some hyperparameters
+gamma_pi0 = 5
+gamma_pi1 = 5
+```
+
+
+```{r}
+doc = w_0[, 1]
+num0 = prod(theta_0^doc)
+num1 = prod(theta_1^doc)
+denom = prod(theta_0^doc) + prod(theta_1^doc)
+prob_0 = num0/denom
+prob_0
+prob_1 = num1/denom
+prob_1
+```
+
